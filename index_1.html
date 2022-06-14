@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Prolific algorithm study</title>
+    <script src="./jspsych.js"></script>
+	<script src="./plugins/jspsych-preload.js"></script>
+    <script src="./plugins/jspsych-html-slider-response.js"></script>
+    <script src="./plugins/jspsych-html-button-response.js"></script>
+    <script src="./plugins/jspsych-html-keyboard-response.js"></script> 
+    <script src="./plugins/jspsych-survey-text.js"></script>
+    <script src="./plugins/jspsych-survey-likert.js"></script>
+    <script src="./plugins/jspsych-instructions.js"></script>
+    <script src="./plugins/jspsych-survey-multi-choice.js"></script>
+	<script src="./plugins/jspsych-survey-multi-select.js"></script>
+    <script src="./welcome.js"></script>
+    <link rel="stylesheet" href="./css/jspsych.css">
+</head>
+<body>
+	<div id="welcome"></div>       
+</body>
+<script>
+
+window.onbeforeunload = function(){
+    return "Your changes will not be changed."
+};
+
+  var timeline = []
+  var payment_trial = false
+  var scale_label = ['<div class = lineheightscale>|<p>Algorithm<p>(0) </div>' , 
+                     '<div class = lineheightscale>|<p>Equal trust in algorithm/human<p>(50)</div>', 
+                     '<div class = lineheightscale>|<p>Human expert<p>(100)</div>']
+  var img_slider = ['./images/slider.png']
+  
+// preload media
+	var preload = {
+		type: 'preload',
+		images: img_slider,
+	}
+
+  timeline.push(preload)
+  // Statements about the self-driving car
+
+  car_pre = ["<h3 style='text-align:center'>Driving a car</h3>A recent study conducted by professional academic researchers showed that cars driven by algorithms experience fewer accidents compared to human drivers."]
+  car_explain = ["<h4>How it works</h4>The algorithm used a system of cameras to predict if an object in the environment would collide with the car. If there was the possibility of danger, the algorithm calculated the object's distance and took precautionary action (e.g., braking, or changing lanes) faster than a human driver could."]
+  car_percent = ["<h4>Algorithm performance</h4>In the study, cars driven by algorithms were 28% safer than human drivers."]
+  car_positive = ["<h4>Why it's better</h4>The systems built into self-driving vehicles have eliminated the most common types of human driving errors that have led to tragic outcomes such as driveway reversing accidents and mistaken brake/accelerator pedals while parking."]
+  car_negative = ["<h4>Potential pitfalls</h4>Although comprehensively trained, the algorithms for recognising braking situations cannot cover all contingencies on the road. For example, odd scenarios such as semi-trailers blocking multiple lanes of a highway while turning, pedestrians walking their bikes rather than riding them, and kangaroo movement patterns have previously led to fatal outcomes because algorithms failed to predict the object's movement and distance from the vehicle. "]
+  
+
+  // Structuring the statements with headings/subheadings
+  var car = [{preamble: ['<div class = instructions>' + car_pre + 
+                '</div><div class = instructions>' + car_explain +'</div>'],  
+             first: ['<div class = instructions>' + car_percent + '</div>'], // 1_Edit for conditions
+             second: ['<div class = instructions>' + car_positive + '</div>'], // 2_Edit for conditions
+             third: ['<div class = instructions>'+ car_negative +'</div>'] // 3_Edit for conditions
+            }]
+
+  // Associated labels for trial labeling in data of "var trial"
+
+  var first_info = "per" // 1_Edit for conditions
+  var second_info = "pos" // 2_Edit for conditions
+  var third_info = "neg" // 3_Edit for conditions
+
+  var order_info = first_info+"_"+second_info+"_"+third_info 
+  
+  jsPsych.data.addProperties({condition: order_info})
+  
+
+  // Prolific ID
+
+  var intro = {
+		type:'survey-text',
+        autocomplete: false,
+        questions: [{prompt: "<h3>Welcome to the study</h3><p>Before we begin, please enter your Prolific ID.", rows: 1, columns: 60, required: true}],
+        on_finish: function(data) {
+          data.type = "id"
+        }
+	};
+
+  // Instructions for the experiment
+  
+  var instructions = {
+    type: 'instructions',
+    show_clickable_nav: true,
+    show_page_number: true,
+    pages: function(){
+
+        return ['<h3>Thank you for signing up!</h3>'+ 
+                '<div class = instructions>' +
+                    'Thank you for signing up for this short study! It may help to maximise your browser window for this study. <p>We are interested in what people think of algorithms. ' + 
+                    'Algorithms are a set of steps that a computer can use to accomplish a task. ' + 
+                    'For example, algorithms are what allow Youtube to quickly analyse your viewing history and recommend which videos to watch next! ' + 
+                '</div>' ,
+            '<h3>Tell us what you think!</h3>'+ 
+                '<div class = instructions>' +
+                    '<p>We are interested in what you think about <b>automated driving algorithms</b>. ' + 
+                    'We would like you to tell us whether you would trust an <b>algorithm</b> or a <b>well-qualified human</b> by moving a slider like in the picture below. ' + 
+					'<div class = center-content>' +
+                            '<img src = '+img_slider+' width = 600></img>' + 
+                    '</div>' +	
+                    '<p>We will provide some information from a recent scientific study. The study was conducted by professional academic researchers and reviewed by anonymous scientists to ensure that the research was conducted properly.' + 
+                     
+                    '</div>',
+            '<h3>When you are ready to begin, hit next!</h3>'+ 
+                '<div class = instructions>' +
+                    'The whole task should take <b>10 - 15 minutes</b>. '+
+                    'The completion code for Prolific will be displayed at the end. ' + 
+                    'Once you are ready to start, hit the next button. If you would like to re-read any instructions, just click the previous button.' + 
+                '</div>',
+                
+              ]
+    },
+	on_finish: function(data){
+		data.type = "scales"
+	}
+  }
+
+
+
+  var fixation = {
+	  type: 'html-keyboard-response',
+	  stimulus: '<div style="font-size:40px;">Loading scenario ... </div>',
+	  choices: jsPsych.NO_KEYS,
+	  trial_duration: 1000,
+	  on_finish: function(data){
+			data.type = "fixation"
+		}
+	}
+
+
+
+
+  var trial = {
+        type: 'html-slider-response',
+        stimulus: jsPsych.timelineVariable('preamble'), 
+        labels: scale_label,
+        require_movement: true, 
+        button_label: 'Proceed',
+        slider_width: 600,
+        prompt: "<p>Who would you trust more to drive a car safely? Move the slider to proceed.</p>",
+        data: {type:"initial",
+               content: "baseline"
+      }
+    };
+
+
+    var rate_1 = {
+        type: 'html-slider-response',
+        stimulus: function(){return [
+                    '<div class = oldtext>',
+                    jsPsych.timelineVariable('preamble'), '</div>',
+                    jsPsych.timelineVariable('first')].join("")
+                  }, 
+        labels: scale_label,
+        require_movement: false, 
+        button_label: 'Proceed',
+        slider_width: 600, 
+        slider_start: function(){
+            prev = jsPsych.data.getLastTrialData().select("response").values[0]
+            return prev
+        },
+        prompt: "<p>Given this <b>new piece of information</b>, who would you trust more to drive a car safely? <p>Slide to adjust your trust rating, or keep your rating and press proceed.</p>",
+        data: {type:"info_1",
+              content: first_info // Changes based on condition
+      }
+    }
+
+    var rate_2 = {
+        type: 'html-slider-response',
+        stimulus: function(){return [
+                    '<div class = oldtext>',
+                    jsPsych.timelineVariable('preamble'), 
+                    jsPsych.timelineVariable('first'), '</div>',
+                    jsPsych.timelineVariable('second')].join("")
+                  }, 
+        labels: scale_label,
+        require_movement: false, 
+        button_label: 'Proceed',
+        slider_width: 600, 
+        slider_start: function(){
+            prev = jsPsych.data.getLastTrialData().select("response").values[0]
+            return prev
+        },
+        prompt: "<p>Given this <b>new piece of information</b>, who would you trust more to drive a car safely? <p>Slide to adjust your trust rating, or keep your rating and press proceed.</p>",
+        data: {type:"info_2",
+              content: second_info // Changes based on condition
+      }
+    }
+
+    var rate_3 = {
+        type: 'html-slider-response',
+        stimulus: function(){return [
+                    '<div class = oldtext>',
+                    jsPsych.timelineVariable('preamble'), 
+                    jsPsych.timelineVariable('first'), 
+                    jsPsych.timelineVariable('second'), '</div>', 
+                    jsPsych.timelineVariable('third')].join("")
+                  },
+        labels: scale_label,
+        require_movement: false, 
+        button_label: 'Proceed',
+        slider_width: 600, 
+        slider_start: function(){
+            prev = jsPsych.data.getLastTrialData().select("response").values[0]
+            return prev
+        },
+        prompt: "<p>Given this <b>new piece of information</b>, who would you trust more to drive a car safely? <p>Slide to adjust your trust rating, or keep your rating and proceed.</p>",
+        data: {type:"info_3",
+              content: third_info // Changes based on condition
+      }
+    }
+
+
+  // Experimental trial flow
+        
+  node = {
+      timeline:[fixation, trial, rate_1, rate_2, rate_3], 
+      timeline_variables: car 
+  }
+
+  // Waiting screen between questionnaire and the task
+
+
+ 	var loading = {
+	  type: 'html-keyboard-response',
+	  stimulus: '<div style="font-size:30px;">Now loading a few multiple choice questions ... </div>',
+	  choices: jsPsych.NO_KEYS,
+	  trial_duration: 2500,
+	  on_finish: function(data){
+			data.type = "wait"
+		}
+	}
+
+	var self_report = {
+		type: 'survey-multi-select',
+		questions: [{
+			prompt: "<b>Q: Was there a piece of information that particularly affected your trust?</b><p>If so, please indicate which below. You can select more than one option if needed.", 
+			name: 'self_report', 
+			options: [
+				"Algorithm performance - algorithms were 28% safer.",
+				"Why it's better - algorithms have eliminated human driving errors.", 
+				"Potential pitfalls - algorithms have failed under abnormal driving circumstances.",
+				"All pieces affected me similarly, none more than others.",
+				"No piece of information affected my ratings. "
+			], 
+			required: true,
+			horizontal: false
+			}],
+	};
+
+
+	var feedback = {
+		type:'survey-text',
+		autocomplete: false,
+		questions: [{prompt: "<h3>Short explanations </h3><p>Could you please write a short explanation of why the previous information affected/did not affect your ratings?"  + 
+							"<p>If it's helpful, can you tell us how you approached the idea of trust?", rows: 10, columns: 60}],
+		on_finish: function(data) {
+			data.type = "feedback"
+		}
+	};
+
+	var post_test = {
+		timeline: [self_report, feedback],
+		timeline_variables: car
+	}
+
+
+	// Algorithm Knowledge scale
+
+	var knowledge_1 = {
+	  type: "survey-multi-choice",
+	  horizontal: true,
+	  preamble: "<b>Question set 1/4:</b> Which of the following functions do you think algorithms perform on the Internet?",
+	  questions: [
+		{
+		  prompt: "1) Algorithms recognize that text entry, such as search results, are incomplete and automatically correct themselves. ", 
+		  name: 'alg_knw_03', 
+		  options: ['True', 'False', "Don't know"], 
+		  required: true,
+		  horizontal: true
+		}, 
+		{
+		  prompt: "2) Algorithms can develop themselves in a completely different direction from that for which they were created.", 
+		  name: 'alg_knw_04', 
+		  options: ['True', 'False', "Don't know"], 
+		  required: true,
+		  horizontal: true
+		}, 
+	  ],
+	};
+
+
+	var knowledge_2 = {
+	  type: "survey-multi-choice",
+	  horizontal: true,
+	  preamble: "<br/><br/><b>Question set 2/4:</b> You will now see some statements about algorithms, some of which are true and some which are false.",
+	  questions: [
+		{
+		  prompt: "1) I can influence algorithms with my internet usage behavior.", 
+		  name: 'alg_knw_05', 
+		  options: ['True', 'False', "Don't know"], 
+		  required: true,
+		  horizontal: true
+		}, 
+		{
+		  prompt: "2) The database used by an algorithm is not decisive in determining its quality.", 
+		  name: 'alg_knw_06', 
+		  options: ['True', 'False', "Don't know"],
+		  required: true,
+		  horizontal: true
+		}, 
+		{
+		  prompt: "3) When searching for a job online, job offers displayed may vary from person to person despite the        same search entry.", 
+		  name: 'alg_knw_08', 
+		  options: ['True', 'False', "Don't know"],
+		  required: true,
+		  horizontal: true
+		}, 
+		{
+		  prompt: "4) The use of algorithms which deliver personalized content can mean that the content you find is          mostly consistent with your pre-existing opinions.", 
+		  name: 'alg_knw_09', 
+		  options: ['True', 'False', "Don't know"],
+		  required: true,
+		  horizontal: true
+		},
+		{
+		  prompt: "5) Algorithms are able to think like human beings.", 
+		  name: 'alg_knw_11', 
+		  options: ['True', 'False', "Don't know"],
+		  required: true,
+		  horizontal: true
+		}, 
+		{
+		  prompt: "6) Algorithms are independent of government censorship.", 
+		  name: 'alg_knw_12', 
+		  options: ['True', 'False', "Don't know"],
+		  required: true,
+		  horizontal: true
+		}, 
+		{
+		  prompt: "7) For some media companies, content that is repeated regularly (e.g., traffic reports) is already         written by algorithms.", 
+		  name: 'alg_knw_17', 
+		  options: ['True', 'False', "Don't know"],
+		  required: true,
+		  horizontal: true
+		}, 
+		{
+		  prompt: "8) Humans are never involved when algorithms are used.", 
+		  name: 'alg_knw_18', 
+		  options: ['True', 'False', "Don't know"],
+		  required: true,
+		  horizontal: true
+		},          
+	  ],
+	};
+
+
+	// Algorithm awareness scale
+
+	var awareness_1 = {
+	  type: "survey-multi-choice",
+	  horizontal: true,
+	  preamble: "<br/><br/><b>Question set 3/4:</b> There is a large amount of data that can be used in the development and application of algorithms. Next, you will see a list of items that you might encounter in your daily life. <br>For each item, please indicate whether or not using this item will collect data that subsequently trains algorithms for future uses.",
+	  questions: [
+		{
+		  prompt: "1) Smart speaker (e.g., Amazon Alexa).", 
+		  name: 'alg_dev_02', 
+		  options: ['Data trains algorithms', 'Does not train algorithms', "Don't know"], 
+		  required: true,
+		  horizontal: true
+		}, 
+		{
+		  prompt: "2) Smart TV's", 
+		  name: 'alg_dev_03', 
+		  options: ['Data trains algorithms', 'Does not train algorithms', "Don't know"], 
+		  required: true,
+		  horizontal: true
+		}, 
+		{
+		  prompt: "3) Wearable computing devices such as activity trackers, heart rate monitors.", 
+		  name: 'alg_fnc_04', 
+		  options: ['Data trains algorithms', 'Does not train algorithms', "Don't know"], 
+		  required: true,
+		  horizontal: true
+		}, 
+		{
+		  prompt: "4) Internet-Browsers (e.g. Internet Explorer, Firefox, Opera, Google Chrome).", 
+		  name: 'alg_fnc_05', 
+		  options: ['Data trains algorithms', 'Does not train algorithms', "Don't know"], 
+		  required: true,
+		  horizontal: true
+		}, 
+		{
+		  prompt: "5) Electronic payment (credit-, debit cards).", 
+		  name: 'alg_fnc_06', 
+		  options: ['Data trains algorithms', 'Does not train algorithms', "Don't know"], 
+		  required: true,
+		  horizontal: true
+		},
+		{
+		  prompt: "6) Cell Phone Towers.", 
+		  name: 'alg_fnc_07', 
+		  options: ['Data trains algorithms', 'Does not train algorithms', "Don't know"], 
+		  required: true,
+		  horizontal: true
+		}, 
+			{
+		  prompt: "7) Computer Games.", 
+		  name: 'alg_fnc_08', 
+		  options: ['Data trains algorithms', 'Does not train algorithms', "Don't know"], 
+		  required: true,
+		  horizontal: true
+		}
+	  ],
+	};
+
+
+
+
+	var awareness_2 = {
+	  type:"survey-multi-choice",
+	  horizontal: true,
+	  preamble: "<br/><br/><b>Question set 4/4:</b> Algorithms are already being used in very different areas. Do you know which of the following functions are often performed by algorithms?",
+	  questions: [
+		{
+		  prompt: "1) Creating weather forecasts:", 
+		  name: 'alg_fnc_01', 
+		  options: ['Algorithm-informed task', 'Not an algorithm task', "Don't know"], 
+		  required: true,
+		  horizontal: true
+		}, 
+		{
+		  prompt: "2) Making product recommendations:", 
+		  name: 'alg_fnc_02', 
+		  options: ['Algorithm-informed task', 'Not an algorithm task', "Don't know"], 
+		  required: true,
+		  horizontal: true
+		}, 
+		{
+		  prompt: "3) Creating financial news (stock markets):", 
+		  name: 'alg_fnc_03', 
+		  options: ['Algorithm-informed task', 'Not an algorithm task', "Don't know"], 
+		  required: true,
+		  horizontal: true
+		}, 
+		{
+		  prompt: "4) Personalising advertisements:", 
+		  name: 'alg_fnc_03', 
+		  options: ['Algorithm-informed task', 'Not an algorithm task', "Don't know"], 
+		  required: true,
+		  horizontal: true
+		}, 
+	  ],
+	};
+	
+	 // Experimental trial flow
+        
+	scale = {
+		timeline:[knowledge_1, knowledge_2, awareness_1, awareness_2], 
+		on_finish: function(data){
+			data.type = "scales"
+		}
+    }
+	
+  
+
+var finish = {
+    type: 'instructions',
+    pages: function(){
+
+        return ['<h3>Thank you for completing the task!</h3>'+ 
+                '<div class = instructions>' +
+                    'Thank you for your help! Your answers will help us understand what information people consider when deciding to use an algorithm. ' + 
+                    'Please enter the following completion code on the Prolific website:' + 
+                    '<p style = "font-size:2em; text-align:center" > 33AF1931' + 
+                    "<p> If you have any questions, please contact the experimenter either through Proflic's messaging system directly or via email on <u>amy.x.li@unsw.edu.au</u>. You can close this webpage whenever you want. "+ 
+                '</div>' ,
+                
+        ]
+    },
+	on_finish: function(data) {
+		data.type = "finish_page"
+	}
+	
+}
+
+
+  // Feeding the elements into the timeline. 
+    
+  timeline.push(intro, instructions, node, loading,
+  				post_test, // Self-report explanations
+                scale, // Algorithm scales
+                finish)
+
+
+  var pid = Math.floor(Math.random() * 10000);
+  var filename = "info_types_" + pid
+
+	
+function saveData(name, data){
+	var xhr = new XMLHttpRequest();
+	xhr.open('POST', 'save_data.php'); // 'write_data.php' is the path to the php file described above.
+	xhr.setRequestHeader('Content-Type', 'application/json');
+	xhr.send(JSON.stringify({filename: filename, filedata: data})); //specify a variable "filename"
+};
+
+  function startExperiment(){	
+		jsPsych.init({
+			timeline: timeline, 
+			preload_images: img_slider,
+      		on_trial_finish: function(){
+
+          	   saveData(filename, jsPsych.data.get().csv()); //This is the server save function
+              //jsPsych.data.get().localSave('csv', 'mydata.csv')
+              //jsPsych.data.displayData('csv')
+		  }
+    })
+  }
+
+
+  welcome.run() // switch when off pilot
+  //startExperiment()
+
+    </script>
+</html>
